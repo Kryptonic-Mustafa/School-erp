@@ -11,12 +11,14 @@ export default function ClassesMatrix() {
   const [newClassName, setNewClassName] = useState('');
   const [assignData, setAssignData] = useState<{classIds: string[], teacherId: string}>({ classIds: [], teacherId: '' });
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     const cRes = await fetch('/api/classes').then(r => r.json());
     const tRes = await fetch('/api/teachers').then(r => r.json());
     if (cRes.success) setClasses(cRes.classes);
     if (tRes.success) setTeachers(tRes.teachers);
+    setLoading(false);
   };
   
   useEffect(() => { fetchData(); }, []);
