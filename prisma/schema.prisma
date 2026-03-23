@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  password     String
+  role         String      // ADMIN, TEACHER, STUDENT
+  createdAt    DateTime    @default(now())
+  student      Student?
+  teacher      Teacher?
+  auditLogs    AuditLog[]
+  accessRoleId String?
+  accessRole   AccessRole? @relation(fields: [accessRoleId], references: [id])
+}
+
+model AccessRole {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  permissions Json
+  users       User[]
+}
+
+model Student {
+  id            String          @id @default(uuid())
+  name          String
+  userId        String          @unique
+  user          User            @relation(fields: [userId], references: [id])
+  classes       Class[]
+  embeddings    FaceEmbedding[]
+  attendances   Attendance[]
+  grades        Grade[]
+}
+
+model Teacher {
+  id        String    @id @default(uuid())
+  name      String
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id])
+  classes   Class[]
+  subjects  Subject[]
+}
+
+model Class {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  teacherId String
+  teacher   Teacher   @relation(fields: [teacherId], references: [id])
+  students  Student[]
+  subjects  Subject[]
+}
+
+// ================= NEW ACADEMIC MODELS ================= //
+
+model Subject {
+  id        String   @id @default(uuid())
+  name      String
+  code      String   @unique
+  classId   String
+  class     Class    @relation(fields: [classId], references: [id])
+  teacherId String
+  teacher   Teacher  @relation(fields: [teacherId], references: [id])
+  exams     Exam[]
+}
+
+model Exam {
+  id        String   @id @default(uuid())
+  title     String
+  date      DateTime
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  grades    Grade[]
+}
+
+model Grade {
+  id        String   @id @default(uuid())
+  score     Float
+  remarks   String?
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  examId    String
+  exam      Exam     @relation(fields: [examId], references: [id])
+
+  @@unique([studentId, examId])
+}
+
+// ================= EXISTING DATA MODELS ================= //
+
+model FaceEmbedding {
+  id         String   @id @default(uuid())
+  vectorData Json
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id])
+}
+
+model Attendance {
+  id         String   @id @default(uuid())
+  date       DateTime @default(now())
+  status     String   @default("PRESENT")
+  confidence Float    @default(1.0)
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  timestamp DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}
