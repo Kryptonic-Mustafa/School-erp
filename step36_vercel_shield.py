@@ -1,3 +1,25 @@
+import os
+import sys
+
+PROJECT_NAME = "school-os"
+
+def create_file(path, content):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content.strip() + "\n")
+    print(f"  [+] Shield Applied: {path}")
+
+def step36_deploy():
+    print("====================================================")
+    print("  M.A.C.DevOS: VERCEL PRODUCTION SHIELD & DEBUG     ")
+    print("====================================================")
+
+    project_dir = os.getcwd() if os.path.basename(os.getcwd()) == PROJECT_NAME else os.path.join(os.getcwd(), PROJECT_NAME)
+
+    print("\n>>> PATCHING FACE-REGISTER PAGE FOR STABILITY...")
+
+    # We are rewriting the page with better error boundaries
+    face_reg_ui = """
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -177,3 +199,12 @@ export default function FaceRegister() {
     </div>
   );
 }
+"""
+    create_file(os.path.join(project_dir, "src/app/admin/face-register/page.tsx"), face_reg_ui)
+
+    print("\n====================================================")
+    print(" [SUCCESS] PRODUCTION SHIELD DEPLOYED.              ")
+    print("====================================================\n")
+
+if __name__ == "__main__":
+    step36_deploy()
