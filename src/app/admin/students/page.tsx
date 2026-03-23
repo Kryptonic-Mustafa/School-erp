@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Plus, Trash2, Edit, GraduationCap, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Plus, Trash2, Edit, GraduationCap, X, ChevronLeft, ChevronRight } from 'lucide-react'; from 'lucide-react';
 import { osToast, osAlert, osLoader } from '@/lib/alert_engine';
 import SystemLoader from '@/components/SystemLoader';
 
@@ -103,10 +103,33 @@ export default function EntityMatrix() {
           <div><label className="block text-sm font-medium mb-1">Full Name</label><input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} autoComplete="off" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500" /></div>
           <div><label className="block text-sm font-medium mb-1">Email</label><input type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} autoComplete="off" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500" /></div>
           <div><label className="block text-sm font-medium mb-1">Password</label><input type="password" required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} autoComplete="new-password" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500" /></div>
-          <div className="space-y-3">
-            <label className="block text-sm font-medium flex justify-between items-center">Classes <span className="text-xs text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded-full">{formData.classIds.length} Selected</span></label>
-            <div className="relative"><Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" /><input type="text" placeholder="Filter classes..." value={classSearchQuery} onChange={e => setClassSearchQuery(e.target.value)} className="w-full bg-white border border-slate-300 rounded-lg py-2.5 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 shadow-sm" /></div>
-            <div className="border border-slate-200 rounded-lg bg-slate-50 p-2 h-40 overflow-y-auto space-y-1 shadow-inner">
+          <div className="space-y-2">
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Enroll in Classes</label>
+            <div className="min-h-[46px] p-1.5 bg-slate-50 border border-slate-200 rounded-xl focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all">
+               <div className="flex flex-wrap gap-1.5 mb-1">
+                  {formData.classIds.map(id => {
+                    const c = classes.find(cls => cls.id === id);
+                    if (!c) return null;
+                    return (
+                      <span key={id} className="bg-white border border-slate-200 shadow-sm text-blue-700 text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1.5">
+                        {c.name}
+                        <X onClick={() => removeClass(id)} className="w-3 h-3 cursor-pointer hover:text-red-500" />
+                      </span>
+                    );
+                  })}
+               </div>
+               <div className="relative">
+                 <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
+                 <input 
+                   type="text" 
+                   placeholder={formData.classIds.length > 0 ? "" : "Search to assign classes..."}
+                   className="w-full bg-transparent pl-7 pr-2 py-1 text-sm outline-none text-slate-700"
+                   value={classSearchQuery}
+                   onChange={e => setClassSearchQuery(e.target.value)}
+                 />
+               </div>
+            </div>
+            <div className="border border-slate-200 rounded-xl bg-white h-32 overflow-y-auto space-y-0.5 shadow-inner">
               {filteredClasses.length === 0 ? <p className="text-xs text-slate-400 p-4 text-center">No classes found.</p> : filteredClasses.map(c => (
                 <label key={c.id} className="flex items-center gap-3 p-2.5 hover:bg-white rounded-md cursor-pointer transition-all border border-transparent hover:border-slate-200 hover:shadow-sm"><input type="checkbox" checked={formData.classIds.includes(c.id)} onChange={() => toggleClassSelection(c.id)} className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" /><span className="text-sm font-semibold text-slate-700">{c.name}</span></label>
               ))}

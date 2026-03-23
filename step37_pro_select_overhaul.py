@@ -1,3 +1,24 @@
+import os
+import sys
+
+PROJECT_NAME = "school-os"
+
+def create_file(path, content):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content.strip() + "\n")
+    print(f"  [+] UI Polished: {path}")
+
+def step37_deploy():
+    print("====================================================")
+    print("  M.A.C.DevOS: PRO-SELECT & BADGE UI OVERHAUL       ")
+    print("====================================================")
+
+    project_dir = os.getcwd() if os.path.basename(os.getcwd()) == PROJECT_NAME else os.path.join(os.getcwd(), PROJECT_NAME)
+
+    print("\n>>> 1. POLISHING FACE REGISTER (SINGLE SEARCH SELECT)...")
+
+    face_reg_ui = """
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -154,3 +175,60 @@ export default function FaceRegister() {
     </div>
   );
 }
+"""
+    create_file(os.path.join(project_dir, "src/app/admin/face-register/page.tsx"), face_reg_ui)
+
+    print("\n>>> 2. POLISHING STUDENT DIRECTORY (BADGES INSIDE FIELD)...")
+
+    students_ui_path = os.path.join(project_dir, "src/app/admin/students/page.tsx")
+    if os.path.exists(students_ui_path):
+        with open(students_ui_path, "r", encoding="utf-8") as f:
+            student_code = f.read()
+
+        import_line = "import { Search, Plus, Trash2, Edit, GraduationCap, X, ChevronLeft, ChevronRight } from 'lucide-react';"
+        if "X," not in student_code:
+            student_code = student_code.replace("import { Search, Plus, Trash2, Edit, GraduationCap, ChevronLeft, ChevronRight }", import_line)
+
+        # Replacing the older multi-select layout with the new "Inside-Badge" container
+        old_classes_block = """<div className="space-y-3">
+            <label className="block text-sm font-medium flex justify-between items-center">Classes <span className="text-xs text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded-full">{formData.classIds.length} Selected</span></label>
+            <div className="relative"><Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" /><input type="text" placeholder="Filter classes..." value={classSearchQuery} onChange={e => setClassSearchQuery(e.target.value)} className="w-full bg-white border border-slate-300 rounded-lg py-2.5 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 shadow-sm" /></div>
+            <div className="border border-slate-200 rounded-lg bg-slate-50 p-2 h-40 overflow-y-auto space-y-1 shadow-inner">"""
+
+        new_classes_block = """<div className="space-y-2">
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Enroll in Classes</label>
+            <div className="min-h-[46px] p-1.5 bg-slate-50 border border-slate-200 rounded-xl focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all">
+               <div className="flex flex-wrap gap-1.5 mb-1">
+                  {formData.classIds.map(id => {
+                    const c = classes.find(cls => cls.id === id);
+                    if (!c) return null;
+                    return (
+                      <span key={id} className="bg-white border border-slate-200 shadow-sm text-blue-700 text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1.5">
+                        {c.name}
+                        <X onClick={() => removeClass(id)} className="w-3 h-3 cursor-pointer hover:text-red-500" />
+                      </span>
+                    );
+                  })}
+               </div>
+               <div className="relative">
+                 <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
+                 <input 
+                   type="text" 
+                   placeholder={formData.classIds.length > 0 ? "" : "Search to assign classes..."}
+                   className="w-full bg-transparent pl-7 pr-2 py-1 text-sm outline-none text-slate-700"
+                   value={classSearchQuery}
+                   onChange={e => setClassSearchQuery(e.target.value)}
+                 />
+               </div>
+            </div>
+            <div className="border border-slate-200 rounded-xl bg-white h-32 overflow-y-auto space-y-0.5 shadow-inner">"""
+
+        student_code = student_code.replace(old_classes_block, new_classes_block)
+        create_file(students_ui_path, student_code)
+
+    print("\n====================================================")
+    print(" [SUCCESS] PRO DROPDOWNS & BADGES DEPLOYED.          ")
+    print("====================================================\n")
+
+if __name__ == "__main__":
+    step37_deploy()
