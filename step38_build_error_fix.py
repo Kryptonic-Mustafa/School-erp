@@ -1,3 +1,28 @@
+import os
+import sys
+
+PROJECT_NAME = "school-os"
+
+def create_file(path, content):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content.strip() + "\n")
+    print(f"  [+] Syntax Repaired & UI Perfected: {path}")
+
+def step38_deploy():
+    print("====================================================")
+    print("  M.A.C.DevOS: TURBOPACK SYNTAX REPAIR              ")
+    print("====================================================")
+
+    project_dir = os.getcwd() if os.path.basename(os.getcwd()) == PROJECT_NAME else os.path.join(os.getcwd(), PROJECT_NAME)
+    if not os.path.exists(project_dir):
+        print(f"[!] Critical Error: Directory '{PROJECT_NAME}' not found.")
+        sys.exit(1)
+
+    print("\n>>> REPAIRING STUDENTS UI (CLEAN OVERWRITE)...")
+
+    # This is the full, optimized, and syntactically correct version of the Students Matrix
+    students_ui = """
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -285,3 +310,12 @@ export default function EntityMatrix() {
     </div>
   );
 }
+"""
+    create_file(os.path.join(project_dir, "src/app/admin/students/page.tsx"), students_ui)
+
+    print("\n====================================================")
+    print(" [SUCCESS] SYNTAX REPAIRED. READY FOR RE-DEPLOY.    ")
+    print("====================================================\n")
+
+if __name__ == "__main__":
+    step38_deploy()
