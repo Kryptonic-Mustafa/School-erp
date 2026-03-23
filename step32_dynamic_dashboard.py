@@ -1,3 +1,84 @@
+import os
+import sys
+
+PROJECT_NAME = "school-os"
+
+def create_file(path, content):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content.strip() + "\n")
+    print(f"  [+] Synced & Upgraded: {path}")
+
+def step32_deploy():
+    print("====================================================")
+    print("  M.A.C.DevOS: DYNAMIC DASHBOARD MATRIX             ")
+    print("====================================================")
+
+    project_dir = os.getcwd() if os.path.basename(os.getcwd()) == PROJECT_NAME else os.path.join(os.getcwd(), PROJECT_NAME)
+    if not os.path.exists(project_dir):
+        print(f"[!] Critical Error: Directory '{PROJECT_NAME}' not found.")
+        sys.exit(1)
+
+    print("\n>>> 1. UPGRADING TELEMETRY API (INJECTING TEACHER COUNTS)...")
+
+    telemetry_api = """
+import { NextResponse } from 'next/server';
+import { db } from '@/lib/db_client';
+
+export async function GET() {
+  try {
+    const totalStudents = await db.student.count();
+    const totalClasses = await db.class.count();
+    const totalTeachers = await db.teacher.count();
+
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const todayAttendance = await db.attendance.count({
+      where: { date: { gte: startOfDay } }
+    });
+
+    const recentLogs = await db.auditLog.findMany({
+      take: 10,
+      orderBy: { timestamp: 'desc' },
+      include: { user: { select: { email: true, role: true } } }
+    });
+
+    const chartData = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      
+      const nextD = new Date(d);
+      nextD.setDate(d.getDate() + 1);
+
+      const count = await db.attendance.count({
+        where: { date: { gte: d, lt: nextD } }
+      });
+
+      chartData.push({
+        name: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        scans: count
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      metrics: { totalStudents, totalClasses, totalTeachers, todayAttendance },
+      chartData,
+      recentLogs
+    });
+  } catch (error) {
+    return NextResponse.json({ error: 'TELEMETRY_FAILURE' }, { status: 500 });
+  }
+}
+"""
+    create_file(os.path.join(project_dir, "src/app/api/telemetry/route.ts"), telemetry_api)
+
+    print("\n>>> 2. WIRING DASHBOARD UI TO LIVE METRICS...")
+
+    dashboard_ui = """
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -87,3 +168,12 @@ export default function AdminDashboard() {
     </div>
   );
 }
+"""
+    create_file(os.path.join(project_dir, "src/app/admin/dashboard/page.tsx"), dashboard_ui)
+
+    print("\n====================================================")
+    print(" [SUCCESS] DASHBOARD IS NOW 100% REAL-TIME DYNAMIC. ")
+    print("====================================================\n")
+
+if __name__ == "__main__":
+    step32_deploy()
